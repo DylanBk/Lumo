@@ -6,8 +6,9 @@ import { SignupSchema, LoginSchema } from "@/lib/definitions";
 import { createUser, loginUser } from "@/lib/auth";
 import { AuthFormState } from "@/lib/definitions";
 import { ZodError } from "zod";
+import { deleteSession } from "@/lib/session";
 
-export async function signup(state: AuthFormState, formData: FormData) {
+export const signup = async (state: AuthFormState, formData: FormData) => {
     try {
         const data = Object.fromEntries(formData.entries());
         const parsedData = SignupSchema.parse(data);
@@ -46,7 +47,7 @@ export async function signup(state: AuthFormState, formData: FormData) {
     };
 };
 
-export async function login(state: AuthFormState, formData: FormData) {
+export const login = async (state: AuthFormState, formData: FormData) => {
     try {
         const data = Object.fromEntries(formData.entries());
         const parsedData = LoginSchema.parse(data);
@@ -83,3 +84,8 @@ export async function login(state: AuthFormState, formData: FormData) {
         };
     };
 }
+
+export const logout = async () => {
+    await deleteSession();
+    redirect('/login');
+};

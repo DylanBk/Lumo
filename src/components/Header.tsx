@@ -1,6 +1,8 @@
 'use client';
 
 import Link from "next/link";
+import { useSession } from "@/context/SessionContext";
+
 import { useEffect, useState } from "react";
 
 import { Search } from 'lucide-react';
@@ -8,14 +10,10 @@ import { Bell } from "lucide-react";
 import { Settings } from "lucide-react";
 
 
-type HeaderProps = {
-    session: any | null;
-};
-
-const Header = (props: HeaderProps) => {
+const Header = () => {
+    const userData = useSession();
     const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
     const [isAuth, setIsAuth] = useState<boolean>(false);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
     useEffect(() => {
         const checkAuth = () => {
@@ -31,11 +29,9 @@ const Header = (props: HeaderProps) => {
         checkAuth();
         handleResize();
 
-        if (props.session) setIsLoggedIn(true);
-
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [props.session]);
+    }, []);
 
     return (
         <header className="h-20 w-full relative flex flex-row items-center justify-between p-4 bg-background shadow z-10">
@@ -64,14 +60,14 @@ const Header = (props: HeaderProps) => {
                         </button>
                     </form>
 
-                    {!isAuth && !isLoggedIn && (
+                    {!isAuth && !userData?.id && (
                         <Link href='/login'>
                             <button className="primary">Login</button>
                         </Link>
                     )}
 
                     <div className="flex flex-row gap-6 ml-8">
-                        {isLoggedIn && (
+                        {userData?.id && (
                             <Link href='/notifications' aria-label="notifications">
                                 <Bell className="icon" />
                             </Link>

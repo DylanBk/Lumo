@@ -1,8 +1,14 @@
-const Home = () => {
-  return (
-    <div>
+import { SessionPayload } from "@/lib/definitions";
 
-    </div>
+type Props = {
+  userData: SessionPayload | null;
+};
+
+const Home = (props: Props) => {
+  return (
+    <main>
+
+    </main>
   );
 };
 
