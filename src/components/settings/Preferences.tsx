@@ -24,7 +24,7 @@ const Preferences = () => {
                         <h6>Theme</h6>
 
                         <button
-                            className={`toggle-container ${isLight ? "justify-start" : "justify-end "}`}
+                            className='toggle-container'
                             onClick={toggleTheme}
                             aria-label={`Switch to ${isLight ? "Dark" : "Light"} Mode`}
                             aria-pressed={!isLight}
@@ -51,7 +51,7 @@ const Preferences = () => {
                         <h6>High Contrast</h6>
 
                         <button
-                            className={`toggle-container ${!contrast ? "justify-start" : "justify-end"}`}
+                            className='toggle-container'
                             onClick={toggleContrast}
                             aria-label={`High Contrast ${contrast ? "On" : "Off"}`}
                             aria-pressed={contrast}

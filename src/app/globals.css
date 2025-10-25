@@ -230,8 +230,19 @@
       padding: 0.25rem;
       border: 2px solid var(--border);
       border-radius: 6px;
+      background: var(--surface);
       color: var(--text-secondary);
       outline: none;
+
+      &:-webkit-autofill {
+        -webkit-box-shadow:0 0 0 50px var(--surface) inset; /* Change the color to your own background color */
+        -webkit-text-fill-color: var(--text-secondary);
+
+        &:focus {
+          -webkit-box-shadow:0 0 0 50px var(--surface-muted) inset;
+          -webkit-text-fill-color: var(--text-primary);
+        }
+      }
 
       &:focus {
         background: var(--surface-muted);
@@ -293,10 +304,56 @@
     text-fill-color: transparent;
   }
 
+  .modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+
+    .modal-content {
+      max-height: 90vh;
+      min-width: 300px;
+      max-width: 90vw;
+      position: relative;
+      padding: 1rem;
+      border-radius: 6px;
+      background: var(--surface);
+      box-shadow: var(--shadow-medium);
+      /* overflow-y: auto; */
+
+      .modal-close {
+        position: absolute;
+        top: -1rem;
+        right: -1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+
+        svg {
+          height: 1.5rem;
+        }
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+  }
+
   .toggle-container {
     height: 2rem;
     width: 4rem;
     display: flex;
+    justify-content: start;
     align-items: center;
     padding: 4px;
     border-radius: calc(infinity * 1px);
@@ -305,6 +362,7 @@
     cursor: pointer;
 
     &[aria-pressed='true'] {
+      justify-content: end;
       background: var(--brand);
 
       .toggler {
@@ -326,4 +384,3 @@
     }
   }
 }
-

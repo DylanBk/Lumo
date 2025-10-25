@@ -1,9 +1,9 @@
 'use client';
 
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { login } from '@/app/actions/user';
 
-import { login } from "../actions/auth";
+import { useActionState, useEffect } from "react";
 
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ const initialState = {
 
 const Login = () => {
     const router = useRouter();
-    const [state, formAction, isPending] = useActionState(login, initialState);
+    const [state, action, isPending] = useActionState(login, initialState);
 
     useEffect(() => {
         if (state.ok) router.push('/');
@@ -30,7 +30,7 @@ const Login = () => {
 
     return (
         <main>
-            <form className="auth" action={formAction}>
+            <form className="auth" action={action}>
                 <h2>Sign In</h2>
 
                 <div>
@@ -72,7 +72,7 @@ const Login = () => {
                 </button>
 
                 {/* TODO: should remove for production */}
-                {/* {state.message && <p className="error">{state.message}</p>} */}
+                {state.message && <p className="error">{state.message}</p>}
 
                 <p>Don&apos;t have an account? <Link href='/signup'>Sign Up</Link></p>
             </form>

@@ -11,11 +11,13 @@
     "seed": "ts-node ./src/scripts/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.908.0",
     "bcrypt": "^6.0.0",
+    "focus-trap-react": "^11.0.4",
+    "framer-motion": "^12.23.24",
     "fs": "^0.0.1-security",
     "jose": "^6.1.0",
     "lucide-react": "^0.545.0",
-    "motion": "^12.23.24",
     "next": "15.5.4",
     "pg": "^8.16.3",
     "react": "19.1.0",

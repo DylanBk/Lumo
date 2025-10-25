@@ -20,6 +20,9 @@ export const ContrastProvider = ({children}: {children: React.ReactNode}) => {
         if (savedContrast) {
             setContrastState(savedContrast);
             document.documentElement.setAttribute('data-contrast', String(savedContrast));
+        } else {
+            document.documentElement.setAttribute('data-contrast', 'false');
+            localStorage.setItem('contrast', 'false');
         };
     }, []);
 

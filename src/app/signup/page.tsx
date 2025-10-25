@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
 
-import { signup } from "../actions/auth";
+import { signup } from "../actions/user";
 
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,10 @@ import { useRouter } from "next/navigation";
 const initialState = {
     ok: false,
     message: "",
+    data: {
+        username: '',
+        email: ''
+    },
     errors: {
         email: [],
         username: [],
@@ -39,10 +43,10 @@ const Signup = () => {
                         name="email"
                         type="email"
                         placeholder="example@domain.com"
-                        defaultValue={state.data?.email || ""}
+                        defaultValue={state.data?.email as string || ""}
                         required
                     />
-                    {state.errors?.email && <p className="error">{String(state.errors.email.join(", "))}</p>}
+                    {state.errors?.email && <p className="error">{String((state.errors.email).join(", "))}</p>}
                 </div>
 
                 <div>
@@ -53,7 +57,7 @@ const Signup = () => {
                         placeholder="John Smith"
                         minLength={3}
                         maxLength={32}
-                        defaultValue={state.data?.username || ""}
+                        defaultValue={state.data?.username as string || ""}
                         required
                     />
                     {state.errors?.username && <p className="error">{String(state.errors.username.join(", "))}</p>}
@@ -94,7 +98,7 @@ const Signup = () => {
                 </button>
 
                 {/* TODO: should remove for production */}
-                {/* {state.message && <p className="error">{state.message}</p>} */}
+                {state.message && <p className="error">{state.message}</p>}
 
                 <p>Already have an account? <Link href='/login'>Login</Link></p>
             </form>

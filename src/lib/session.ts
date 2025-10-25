@@ -31,20 +31,10 @@ export async function decrypt(session: string | undefined = '') {
 // = COOKIES =
 // ===========
 
-export async function createSession(id: string, email: string, username: string, role: string) {
+export async function createSession(id: string, email: string, username: string, role: string, avatar: string) {
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
-    const session = await encrypt({id, email, username, role, expiresAt});
+    const session = await encrypt({id, email, username, role, avatar, expiresAt});
     const cookieStore = await cookies();
-
-    // log everything
-    console.log('userdata', id, email, username, role)
-    // console.log(```setting cookie, {
-    //     session,
-    //     httpOnly: true,
-    //     secure: false,
-    //     expires: expiresAt,
-    //     sameSite: 'lax',
-    // }```);
 
     cookieStore.set('session', session, {
         httpOnly: true,
@@ -71,19 +61,26 @@ export async function getSession() {
     };
 };
 
-export async function updateSession() {
-    const session = (await cookies()).get('session')?.value;
+export async function updateSession(attribute?: keyof SessionPayload, value?: string) {
+    const cookieStore = await cookies();
+    const session = cookieStore.get('session')?.value;
     const payload = await decrypt(session);
 
     if (!session || !payload) {
         return null;
     };
 
+    const updatedPayload: SessionPayload = {
+        ...payload.payload as SessionPayload,
+        ...(attribute && value ? {[attribute]: value} : {})
+    };
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
 
-    const cookieStore = await cookies();
+    updatedPayload.expiresAt = expiresAt;
 
-    cookieStore.set('session', session, {
+    const newSession = await encrypt(updatedPayload);
+
+    cookieStore.set('session', newSession, {
         httpOnly: true,
         secure: false, //TODO!: set to true for production
         expires: expiresAt,

@@ -1,6 +1,6 @@
 'use client';
 
-import { logout } from "@/app/actions/auth";
+import { logout, remove } from "@/app/actions/user";
 
 import { useTransition } from "react";
 import { LoaderCircle } from "lucide-react";
@@ -12,6 +12,12 @@ const DangerZone = () => {
     const handleLogout = async () => {
         startTransition(() => {
             logout();
+        });
+    };
+
+    const handleDeleteAccount = async () => {
+        startTransition(() => {
+            remove();
         });
     };
 
@@ -32,7 +38,18 @@ const DangerZone = () => {
                         'Logout'}
                 </button>
 
-                <button className="danger">Delete Account</button>
+                <button
+                    className="danger"
+                    onClick={handleDeleteAccount}
+                    disabled={isPending}>
+                    {isPending ?
+                        <LoaderCircle
+                            className="animate-spin duration-200"
+                        />
+                    :
+                        'Delete Account'
+                    }
+                </button>
             </div>
         </section>
     );

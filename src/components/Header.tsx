@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "@/context/SessionContext";
 
 import { useEffect, useState } from "react";
@@ -54,7 +55,7 @@ const Header = () => {
                         />
 
                         <button
-                            className="absolute right-0"
+                            className="absolute right-2"
                             type="submit">
                             <Search className="icon" />
                         </button>
@@ -74,7 +75,17 @@ const Header = () => {
                         )}
 
                         <Link href='/settings' aria-label="Settings">
+                            {userData?.id ? (
+                                <Image
+                                    height={256}
+                                    width={256}
+                                    className="h-8 w-8 rounded-full"
+                                    src={userData.avatar}
+                                    alt="Settings"
+                                />
+                            ) : (
                             <Settings className="icon" />
+                            )}
                         </Link>
                     </div>
                 </nav>
