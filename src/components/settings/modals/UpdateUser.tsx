@@ -2,9 +2,9 @@ import { update } from '@/app/actions/user';
 import { capitalise } from '@/lib/helpers';
 import Toast from '@/components/Toast';
 
-
 import { useRef, useActionState, useState, useEffect } from "react";
 import {FocusTrap} from 'focus-trap-react';
+
 import { LoaderCircle, X } from "lucide-react";
 
 
@@ -30,8 +30,6 @@ const UpdateUserModal = (props: Props) => {
     const newPwInput = useRef<HTMLInputElement>(null);
     const [state, action, isPending] = useActionState(update, initialState);
     const [isToast, setIsToast] = useState<boolean>(false);
-
-    console.log(state)
 
     useEffect(() => {
         if (state.ok) setIsToast(true);

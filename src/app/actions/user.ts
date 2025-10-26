@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { SignupSchema, LoginSchema, UpdateUserSchema, AuthFormState, UpdateUserState, SessionPayload } from "@/lib/definitions";
+import { SignupSchema, LoginSchema, UpdateUserSchema, DeleteUserSchema, AuthFormState, UpdateUserState, DeleteUserState, SessionPayload } from "@/lib/definitions";
 import { createUser, deleteUser, getUser, loginUser, updateUser } from "@/lib/user";
 import { deleteSession, getSession, updateSession } from "@/lib/session";
 
@@ -174,11 +174,34 @@ export const update = async (state: UpdateUserState, formData: FormData) => {
     };
 };
 
-export const remove = async () => {
-    const s = await getSession();
+export const remove = async (state: DeleteUserState, formData: FormData) => {
+    try {
+        const data = Object.fromEntries(formData.entries());
+        const parsedData = DeleteUserSchema.parse(data);
 
-    await deleteUser(s?.payload.id as string);
-    redirect('/signup');
+        await deleteUser(parsedData.email, parsedData.password);
+
+        redirect('/signup');
+    } catch (e) {
+        if (e instanceof ZodError) {
+        const errors: Record<string, string[]> = {};
+        for (const err of e.issues) {
+            const field = err.path[0];
+            if (typeof field === "string") {
+            if (!errors[field]) errors[field] = [];
+            errors[field].push(err.message);
+            }
+        };
+
+        return { ok: false, message: "", errors };
+        } else {
+            return {
+                ok: false,
+                message: e instanceof Error ? e.message : 'Unknown Error',
+                errors: {}
+            };
+        };
+    };
 };
 
 export const logout = async () => {

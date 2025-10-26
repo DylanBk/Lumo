@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import db from '@/config/db';
 
-import { createSession, deleteSession } from '@/lib/session';
+import { createSession, deleteSession, getSession } from '@/lib/session';
 import { uploadAvatar, deleteAvatar } from './aws';
 
 
@@ -157,19 +157,31 @@ export const updateUser = async (id: string, attr: string, content: string) => {
     };
 };
 
-export const deleteUser = async (id: string) => {
+export const deleteUser = async (email: string, password: string) => {
     const client = await db.connect();
+    const s = await getSession();
 
     try {
         await client.query('BEGIN');
 
+        if (email !== s?.payload.email) throw new Error('Email does not match the logged in user.');
+
+        const user = await client.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [email]
+        );
+        if (!user) throw new Error('No user found with that email address.');
+
+        const pwCheck = await bcrypt.compare(password, user.rows[0].password);
+        if (!pwCheck) throw new Error('Incorrect password.');
+
         const q = await client.query(
-            `DELETE FROM users WHERE id = $1`,
-            [id]
+            `DELETE FROM users WHERE email = $1`,
+            [email]
         );
         if (q.rowCount === 0) throw new Error('No user found with that ID');
 
-        const res = await deleteAvatar(id);
+        const res = await deleteAvatar(s!.payload.id as string);
         if (!res) throw new Error('Error deleting avatar from S3');
 
         await deleteSession();

@@ -70,6 +70,13 @@ export const UpdateUserSchema = z.object({
         .optional(),
 });
 
+export const DeleteUserSchema = z.object({
+    email: z
+        .email({message: "Invalid email address"}),
+    password: z
+        .string().min(1, {message: "Password is required."}),
+});
+
 
 export type SignupForm = {
     email: string;
@@ -97,10 +104,20 @@ export type AuthFormState =
 export type UpdateUserState = 
     | {
         errors?: {
-        email?: string;
-        username?: string;
-        password?: string;
-        }
+            email?: string;
+            username?: string;
+            password?: string;
+        };
+        message?: string;
+    }
+    | undefined;
+
+export type DeleteUserState =
+    | {
+        errors?: {
+            email?: string;
+            password?: string;
+        };
         message?: string;
     }
     | undefined;
