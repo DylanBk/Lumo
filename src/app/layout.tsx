@@ -2,17 +2,20 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { ThemeProvider } from "@/context/ThemeContext";
+import { getSession } from "@/lib/session";
+import { SessionPayload } from "@/lib/definitions";
+
 import { ContrastProvider } from "@/context/ContrastContext";
 import { SessionProvider } from "@/context/SessionContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 // styles
 import "./globals.css";
 
 // UI components
-import { getSession } from "@/lib/session";
 import Header from "@/components/Header";
-import { SessionPayload } from "@/lib/definitions";
+import Toast from "@/components/Toast";
 
 
 const geistSans = Geist({
@@ -39,17 +42,18 @@ const RootLayout = async ({
 
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider>
-          <ContrastProvider>
-            <SessionProvider value={session?.payload as SessionPayload}>
-              <Header />
-              {children}
-            </SessionProvider>
-          </ContrastProvider>
-        </ThemeProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ContrastProvider>
+          <SessionProvider value={session?.payload as SessionPayload}>
+            <ToastProvider>
+              <ThemeProvider>
+                    <Header />
+                    <Toast />
+                    {children}
+              </ThemeProvider>
+            </ToastProvider>
+          </SessionProvider>
+        </ContrastProvider>
       </body>
     </html>
   );

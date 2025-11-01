@@ -115,7 +115,6 @@ export const updateUser = async (id: string, attr: string, content: string) => {
 
     try {
         await client.query('BEGIN');
-        console.log('data', id, attr, content)
 
         if (attr === 'avatar') {
             console.log('uploading avatar...');
@@ -129,12 +128,9 @@ export const updateUser = async (id: string, attr: string, content: string) => {
             const mimeMatch = content.match(/^data:(image\/\w+);base64,/);
             const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
 
-            console.log('bm', buffer, mimeType);
-
             const res = await uploadAvatar(id, buffer, mimeType);
 
             if (!res) throw new Error('Error uploading avatar to S3');
-            console.log('res', res);
 
             return;
         } else {

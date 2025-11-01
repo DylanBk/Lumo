@@ -1,8 +1,8 @@
 import { update } from '@/app/actions/user';
 import { capitalise } from '@/lib/helpers';
-import Toast from '@/components/Toast';
+import { useToast } from '@/context/ToastContext';
 
-import { useRef, useActionState, useState, useEffect } from "react";
+import { useRef, useActionState, useEffect, useCallback } from "react";
 import {FocusTrap} from 'focus-trap-react';
 
 import { LoaderCircle, X } from "lucide-react";
@@ -29,17 +29,12 @@ const UpdateUserModal = (props: Props) => {
     const pwInput = useRef<HTMLInputElement>(null);
     const newPwInput = useRef<HTMLInputElement>(null);
     const [state, action, isPending] = useActionState(update, initialState);
-    const [isToast, setIsToast] = useState<boolean>(false);
+    const {showToast} = useToast();
 
-    useEffect(() => {
-        if (state.ok) setIsToast(true);
-    }, [state]);
-    
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         state.ok = false;
         state.message = "";
         state.errors = {};
-        setIsToast(false);
 
         if (attrInput.current) {
             attrInput.current.value = '';
@@ -52,20 +47,28 @@ const UpdateUserModal = (props: Props) => {
         };
 
         props.onClose();
-    };
+    }, [props, state]);
+
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (props.show) {
+                if (e.key === 'Escape') handleClose();
+            };
+        };
+
+        document.addEventListener('keydown', handleEsc);
+
+        return () => document.removeEventListener('keydown', handleEsc);
+    }, [handleClose]);
+
+    useEffect(() => {
+        if (state.ok) showToast('Success', `${capitalise(props.attr)} updated successfully.`, 'success');
+    }, [state.ok, props.attr, showToast]);
 
     return (
         <div className="modal" hidden={!props.show}>
             <FocusTrap active={props.show}>
                 <div>
-                    <Toast
-                        title='Success'
-                        context='success'
-                        content={`${capitalise(props.attr)} updated successfully.`}
-                        visible={isToast}
-                        onClose={() => setIsToast(false)}
-                    />
-
                     <div className="modal-content">
                         <h2>{`Update ${capitalise(props.attr) || 'undefined'}`}</h2>
 
@@ -108,7 +111,7 @@ const UpdateUserModal = (props: Props) => {
                                             <input ref={newPwInput} name='new-password' type="password" placeholder='********' required />
                                         </div>
 
-                                        <p className='error'>{state?.errors['new-password'] && state?.errors['new-password']}</p>
+                                        <p className='error'>{state?.errors['new-password' as keyof typeof state.errors] && state?.errors['new-password' as keyof typeof state.errors]}</p>
                                     </>
                                 )}
                             </div>

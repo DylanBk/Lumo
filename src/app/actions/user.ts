@@ -131,24 +131,25 @@ export const update = async (state: UpdateUserState, formData: FormData) => {
         const val = parsedData[attr as keyof typeof parsedData];
 
         if (parsedData.password) {
-        const user = await getUser(id);
-        const check = await bcrypt.compare(parsedData.password, user.password);
-        if (!check) {
-            return {
-            ok: false,
-            message: "",
-            errors: { password: "Incorrect password" }
+            const user = await getUser(id);
+            const check = await bcrypt.compare(parsedData.password, user.password);
+
+            if (!check) {
+                return {
+                ok: false,
+                message: "",
+                errors: { password: "Incorrect password" }
+                };
             };
-        }
-        }
+        };
 
         await updateUser(id, attr, val as string);
         await updateSession(attr as keyof SessionPayload, val as string);
 
         return {
-        ok: true,
-        message: `User updated ${parsedData.attr}`,
-        errors: {}
+            ok: true,
+            message: `User updated ${parsedData.attr}`,
+            errors: {}
         };
     } catch (e) {
         if (e instanceof ZodError) {

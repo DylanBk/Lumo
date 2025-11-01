@@ -1,5 +1,11 @@
 import z from "zod";
 
+
+// ==========
+// ZOD SCHEMA
+
+// user schema
+
 export const SignupSchema = z.object({
     email: z
         .email({message: "Invalid email address"}),
@@ -78,6 +84,21 @@ export const DeleteUserSchema = z.object({
 });
 
 
+// post schema
+
+export const CreatePostSchema = z.object({
+    content: z
+        .string()
+        .min(1, {message: "Post must be at least 1 character long."})
+        .max(400, {message: "Post must be at most 400 characters long."})
+    // TODO?: add tags to filter posts by?
+});
+
+// ========
+// TS TYPES
+
+// user types
+
 export type SignupForm = {
     email: string;
     username: string;
@@ -107,6 +128,7 @@ export type UpdateUserState =
             email?: string;
             username?: string;
             password?: string;
+            'new-password'?: string;
         };
         message?: string;
     }
@@ -130,3 +152,26 @@ export type SessionPayload = {
     avatar: string;
     expiresAt: Date;
 };
+
+
+// post types
+
+export type PostType = {
+    id: number;
+    content: string;
+    author_id: number;
+    author_name: string;
+    likes: number;
+    reposts: number;
+    comments: number;
+    created_at: Date;
+};
+
+export type CreatePostState =
+    | {
+        errors?: {
+            content?: string;
+        };
+        message?: string;
+    }
+    | undefined;

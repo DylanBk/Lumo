@@ -2,7 +2,7 @@
 
 import { logout, remove } from "@/app/actions/user";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useCallback, useEffect, useState, useTransition } from "react";
 import {FocusTrap} from "focus-trap-react";
 
 import { LoaderCircle } from "lucide-react";
@@ -22,19 +22,29 @@ const DangerZone = () => {
     const [isModal, setIsModal] = useState<boolean>(false);
     const [state, action, isPending] = useActionState(remove, initialState);
 
-    console.log(state)
+        const handleCancel = useCallback(() => {
+            state.ok = false;
+            state.message = "";
+            state.errors = {};
+            setIsModal(false);
+        }, [state]);
+
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (isModal) {
+                if (e.key === 'Escape') setIsModal(false);
+            };
+        };
+
+        document.addEventListener('keydown', handleEsc);
+
+        return () => document.removeEventListener('keydown', handleEsc);
+    }, [isModal, handleCancel]);
 
     const handleLogout = async () => {
         startTransition(() => {
             logout();
         });
-    };
-
-    const handleCancel = () => {
-        state.ok = false;
-        state.message = "";
-        state.errors = {};
-        setIsModal(false);
     };
 
     return (
