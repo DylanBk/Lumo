@@ -73,7 +73,7 @@ export const UpdateUserSchema = z.object({
             "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.",
         }
         )
-        .optional(),
+        .optional()
 });
 
 export const DeleteUserSchema = z.object({
@@ -92,6 +92,40 @@ export const CreatePostSchema = z.object({
         .min(1, {message: "Post must be at least 1 character long."})
         .max(400, {message: "Post must be at most 400 characters long."})
     // TODO?: add tags to filter posts by?
+});
+
+export const UpdatePostSchema = z.object({
+    attr: z
+        .string()
+        .refine((val) => ['content', 'like', 'repost', 'comment'].includes(val), {
+        message: "Invalid attribute to update.",
+    }),
+
+    id: z
+        .string(),
+    content: z
+        .string()
+        .min(1, {message: "Post must be at least 1 character long."})
+        .max(400, {message: "Post must be at most 400 characters long."})
+        .optional(),
+    like: z
+        .string()
+        .refine((val) => ['+', '-'].includes(val), {
+            message: "Invalid like operation.",
+        })
+        .optional(),
+    repost: z
+        .string()
+        .refine((val) => ['+', '-'].includes(val), {
+            message: "Invalid repost operation.",
+        })
+        .optional(),
+    comment: z
+        .string()
+        .refine((val) => ['+', '-'].includes(val), {
+            message: "Invalid comment operation.",
+        })
+        .optional()
 });
 
 // ========
@@ -124,6 +158,7 @@ export type AuthFormState =
 
 export type UpdateUserState = 
     | {
+        ok: boolean;
         errors?: {
             email?: string;
             username?: string;
@@ -163,14 +198,29 @@ export type PostType = {
     author_name: string;
     likes: number;
     reposts: number;
+    shares: number;
     comments: number;
     created_at: Date;
+    liked?: boolean;
+    reposted?: boolean;
+    shared?: boolean;
 };
 
 export type CreatePostState =
     | {
+        ok: boolean;
         errors?: {
             content?: string;
+        };
+        message?: string;
+    }
+    | undefined;
+
+export type UpdatePostState =
+    | {
+        ok: boolean;
+        errors?: {
+            content?: string | null;
         };
         message?: string;
     }

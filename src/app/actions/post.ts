@@ -1,9 +1,9 @@
 'use server';
 
 import { getSession } from "@/lib/session";
-import { CreatePostState, CreatePostSchema, PostType } from "@/lib/definitions";
+import { CreatePostState, CreatePostSchema, PostType, UpdatePostState, UpdatePostSchema } from "@/lib/definitions";
 import { ZodError } from "zod";
-import { createPost, getPosts } from "@/lib/post";
+import { createPost, getPosts, updatePost } from "@/lib/post";
 
 
 export const create = async (state: CreatePostState, formData: FormData) => {
@@ -52,9 +52,10 @@ export const create = async (state: CreatePostState, formData: FormData) => {
 export const get = async (id: string) => {
 };
 
-export const getAll = async () => {
+export const getFeed = async () => {
     try {
-        const posts = await getPosts();
+        const s = await getSession();
+        const posts = await getPosts(s?.payload.id as string, 20);
 
         return {
             ok: true,
@@ -67,3 +68,105 @@ export const getAll = async () => {
         };
     }
 };
+
+export const update = async (state: UpdatePostState, formData: FormData): Promise<UpdatePostState> => {
+    try {
+        const s = await getSession();
+
+        if (!s?.payload.id) throw new Error('No session available');
+
+        const data = Object.fromEntries(formData);
+        const parsedData = UpdatePostSchema.parse(data);
+
+        await updatePost({
+            userId: String(s.payload.id),
+            postId: parsedData.id,
+            content: parsedData.content
+        });
+
+        return {
+            ok: true,
+            message: `Post content updated successfully.`,
+            errors: {}
+        };
+
+    } catch (e) {
+        if (e instanceof ZodError) {}
+    };
+};
+
+export const like = async(id: string, state: boolean) => {
+    try {
+        const s = await getSession();
+
+        if (!s?.payload.id) throw new Error('No session available');
+
+        await updatePost({
+            userId: String(s.payload.id),
+            postId: id,
+            like: state ? '+' : '-'
+        });
+
+        return {
+            ok: true,
+            message: `Post ${state ? 'liked' : 'unliked'} successfully.`,
+            errors: {}
+        };
+    } catch (e) {
+        return {
+            ok: false,
+            message: e instanceof Error ? e.message : "Unknown error"
+        };
+    };
+};
+
+export const repost = async(id: string, state: boolean) => {
+    try {
+        const s = await getSession();
+
+        if (!s?.payload.id) throw new Error('No session available');
+
+        await updatePost({
+            userId: String(s.payload.id),
+            postId: id,
+            repost: state ? '+' : '-'
+        });
+
+        return {
+            ok: true,
+            message: `Post ${state ? 'reposted' : 'unreposted'} successfully.`,
+            errors: {}
+        }
+    } catch (e) {
+        return {
+            ok: false,
+            message: e instanceof Error ? e.message : "Unknown error"
+        };
+    }
+};
+
+// export const share = async(id: string, state: boolean) => {
+//     try {
+//         const s = await getSession();
+
+//         if (!s?.payload.id) throw new Error('No session available');
+
+//         await updatePost({
+//             userId: String(s.payload.id),
+//             postId: id,
+//             share: state ? '+' : '-'
+//         });
+//         console.log('updatePost - share')
+
+//         return {
+//             ok: true,
+//             message: `Post ${state ? 'shared' : 'unshared'}`,
+//             errors: {}
+//         };
+//     } catch (e) {
+//         return {
+//             ok: false,
+//             message: e instanceof Error ? e.message : "Unknown error"
+//         };
+//     };
+// };

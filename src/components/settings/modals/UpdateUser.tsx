@@ -59,7 +59,7 @@ const UpdateUserModal = (props: Props) => {
         document.addEventListener('keydown', handleEsc);
 
         return () => document.removeEventListener('keydown', handleEsc);
-    }, [handleClose]);
+    }, [props.show, handleClose]);
 
     useEffect(() => {
         if (state.ok) showToast('Success', `${capitalise(props.attr)} updated successfully.`, 'success');

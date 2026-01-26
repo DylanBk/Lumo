@@ -1,13 +1,14 @@
 'use client';
 
 import Image from "next/image";
+import { UpdatePostState } from "@/lib/definitions";
 import { dateToReadable } from "@/lib/helpers";
+import { useToast } from "@/context/ToastContext";
 
-import Toast from "@/components/Toast";
+import { like, repost, update } from "@/app/actions/post";
 
-import { useState } from "react";
-import { Heart, Repeat, Share2 } from "lucide-react";
-import { ToastType } from "@/lib/definitions";
+import { Heart, Repeat, Share2, EllipsisVertical } from "lucide-react";
+import { useActionState, useState, useRef, useEffect } from "react";
 
 type Props = {
     id: number;
@@ -17,80 +18,116 @@ type Props = {
     content: string;
     likes: number;
     reposts: number;
+    shares: number;
     comments: number;
     createdAt: Date;
+    liked?: boolean;
+    reposted?: boolean;
+    shared?: boolean;
+    onUpdate: ({
+        like,
+        repost,
+        share
+    }: {
+        like?: '+' | '-' | null;
+        repost?: '+' | '-' | null;
+        share?: true | false | null;
+    }) => void;
 };
 
+const initialState: UpdatePostState = {
+    ok: false,
+    message: "",
+    errors: {
+        content: null
+    }
+};
+
+
 const Post = (props: Props) => {
-    const [toast, setToast] = useState<ToastType>({
-        title: '',
-        context: 'info',
-        content: '',
-        visible: false,
-        onClose: () => {
-            setToast({
-                ...toast,
-                title: '',
-                context: 'info',
-                content: '',
-                visible: false
+    const [state, action, isPending] = useActionState<UpdatePostState, FormData>(update, initialState);
+    const { showToast } = useToast();
+    const interactionPending = useRef<boolean>(false);
+    const [liked, setLiked] = useState<boolean>(props.liked? true : false);
+    const [reposted, setReposted] = useState<boolean>(props.reposted? true : false);
+    // const [shared, setShared] = useState<boolean>(false);
+
+    useEffect(() => {
+        setLiked(props.liked ?? false);
+        setReposted(props.reposted ?? false);
+        // setShared(props.shared ?? false);
+    }, [props.liked, props.reposted]);
+
+    console.log(props)
+
+
+    const handleLike = async () => {
+        if (interactionPending.current) return;
+
+        interactionPending.current = true;
+        const x = await like(String(props.id), !liked);
+
+        if (x.ok) {
+            console.log('response', x)
+            setLiked(!liked);
+            props.onUpdate({
+                like: !liked ? '+' : '-'
             });
-        }
-    });
+        };
 
-    const handleLike = () => {
+        interactionPending.current = false;
     };
 
-    const handleRepost = () => {
-        // update reposts and stuff
+    const handleRepost = async () => {
+        if (interactionPending.current) return;
 
-        setToast({
-            title: 'Reposted',
-            context: 'success',
-            content: 'You have reposted this post.',
-            visible: true,
-            onClose: () => {
-                setToast({
-                    ...toast,
-                    title: '',
-                    context: 'info',
-                    content: '',
-                    visible: false
-                })
-            }
-        });
+        interactionPending.current = true;
+        const x = await repost(String(props.id), !reposted);
+
+        if (x.ok) {
+            setReposted(!reposted);
+            props.onUpdate({
+                repost: !reposted ? '+' : '-'
+            });
+
+            if (!reposted) {
+            showToast('Reposted', 'You have reposted this post.', 'success')
+            } else {
+                showToast('Action Undone', 'You have removed your repost.', 'info')
+            };
+        };
+
+        interactionPending.current = false;
     };
 
-    const handleShare = () => {
+    const handleShare = async () => {
+        // if (interactionPending.current) return;
+
+        // interactionPending.current = true;
+        
         navigator.clipboard.writeText(`Check out this post by ${props.authorName}: ${window.location.origin}/post/${props.id}`);
 
-        setToast({
-            title: 'Copied to clipboard',
-            context: 'info',
-            content: 'You can now share this post.',
-            visible: true,
-            onClose: () => {
-                setToast({
-                    ...toast,
-                    title: '',
-                    context: 'info',
-                    content: '',
-                    visible: false
-                })
-            }
-        });
+        // const x = await share(String(props.id), !shared);
+
+        // if (x.ok) {
+        //     setShared(!shared);
+        //     props.onUpdate({
+        //         share: !shared
+        //     });
+        // };
+
+        showToast('Link Copied', 'You can now share this post.', 'info');
+
+        // interactionPending.current = false;
+    };
+
+    // TODO: handleComment
+    const handleComment = () => {
+
     };
 
     return (
         <section id={`post-${props.id}`} className="w-full sm:w-3/4 md:w-1/2 lg:w-2/5 flex flex-col gap-2 p-4 rounded-sm bg-surface">
-
-            <Toast
-                title={toast.title}
-                context={toast.context}
-                content={toast.content}
-                visible={toast.visible}
-                onClose={toast.onClose}
-            />
 
             <div className="flex flex-row justify-between">
                 <div className="flex flex-row items-center gap-2">
@@ -106,6 +143,10 @@ const Post = (props: Props) => {
                 </div>
 
                 <p className="text-xs text-text-secondary">{dateToReadable(props.createdAt)}</p>
+                
+                {/* { props.authorId ===
+                    <EllipsisVertical/>
+                } */}
             </div>
 
             <p className="text-text-secondary">{props.content}</p>
@@ -113,7 +154,10 @@ const Post = (props: Props) => {
             <div className="flex flex-row justify-center gap-6 mt-2">
                 <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
                     <Heart
-                        className="fill-surface text-text-secondary hover:fill-error hover:text-error icon"
+                        className={
+                            liked ? 'fill-error text-error icon'
+                            : 'fill-surface text-text-secondary hover:fill-error hover:text-error icon'
+                        }
                         size={24}
                         onClick={handleLike}
                     />
@@ -121,7 +165,10 @@ const Post = (props: Props) => {
                 </div>
                 <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
                     <Repeat
-                        className="text-text-secondary hover:text-success icon"
+                        className={
+                            reposted ? 'text-success icon'
+                            : 'text-text-secondary hover:text-success icon'
+                        }
                         size={24}
                         onClick={handleRepost}
                     />
@@ -129,11 +176,13 @@ const Post = (props: Props) => {
                 </div>
                 <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
                     <Share2
-                        className="fill-text-secondary text-text-secondary hover:fill-accent hover:text-accent icon"
+                        className='fill-text-secondary text-text-secondary icon hover:fill-accent hover:text-accent'
+                            // shared ? 'fill-accent text-accent icon'
+                            // : "fill-text-secondary text-text-secondary hover:fill-accent hover:text-accent"}
                         size={24}
                         onClick={handleShare}
                     />
-                    <span>{props.comments}</span>
+                    {/* <span>{props.shares}</span> */}
                 </div>
             </div>
         </section>

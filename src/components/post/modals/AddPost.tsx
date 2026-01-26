@@ -6,6 +6,7 @@ import { useActionState, useState } from "react";
 import { FocusTrap } from "focus-trap-react";
 
 import { Plus, X, LoaderCircle } from "lucide-react";
+import { CreatePostState } from "@/lib/definitions";
 
 
 const initialState = {
@@ -18,12 +19,13 @@ const initialState = {
 
 const CreatePost = () => {
     const [isModal, setIsModal] = useState<boolean>(false);
-    const [state, action, isPending] = useActionState(create, initialState)
+    const [state, action, isPending] = useActionState<CreatePostState, FormData>(create, initialState)
 
     const handleClose = () => {
-        state.ok = false;
-        state.message = '';
-        state.errors = {};
+        state!.ok = false;
+        state!.message = '';
+        state!.errors = {};
+
         setIsModal(false);
     };
 
