@@ -1,17 +1,24 @@
 'use client';
 
 import Image from "next/image";
+
 import { UpdatePostState } from "@/lib/definitions";
 import { dateToReadable } from "@/lib/helpers";
 import { useToast } from "@/context/ToastContext";
 
 import { like, repost, update } from "@/app/actions/post";
 
-import { Heart, Repeat, Share2, EllipsisVertical } from "lucide-react";
 import { useActionState, useState, useRef, useEffect } from "react";
+import { Heart, Repeat, Share2, EllipsisVertical } from "lucide-react";
+
+import Options from "@/components/Options";
+import EditPost from "@/components/post/modals/EditPost";
+import DeletePost from "@/components/post/modals/DeletePost";
+
 
 type Props = {
     id: number;
+    userId: string | undefined;
     authorId: string;
     authorName: string;
     authorAvatar: string;
@@ -33,6 +40,7 @@ type Props = {
         repost?: '+' | '-' | null;
         share?: true | false | null;
     }) => void;
+    onDelete: () => void;
 };
 
 const initialState: UpdatePostState = {
@@ -46,11 +54,14 @@ const initialState: UpdatePostState = {
 
 const Post = (props: Props) => {
     const [state, action, isPending] = useActionState<UpdatePostState, FormData>(update, initialState);
-    const { showToast } = useToast();
     const interactionPending = useRef<boolean>(false);
     const [liked, setLiked] = useState<boolean>(props.liked? true : false);
     const [reposted, setReposted] = useState<boolean>(props.reposted? true : false);
     // const [shared, setShared] = useState<boolean>(false);
+    const { showToast } = useToast();
+    const [isOptions, setIsOptions] = useState<boolean>(false);
+    const [isDelete, setIsDelete] = useState<boolean>(false);
+    const [isEdit, setIsEdit] = useState<boolean>(false);
 
     useEffect(() => {
         setLiked(props.liked ?? false);
@@ -104,7 +115,7 @@ const Post = (props: Props) => {
         // if (interactionPending.current) return;
 
         // interactionPending.current = true;
-        
+
         navigator.clipboard.writeText(`Check out this post by ${props.authorName}: ${window.location.origin}/post/${props.id}`);
 
         // const x = await share(String(props.id), !shared);
@@ -121,14 +132,24 @@ const Post = (props: Props) => {
         // interactionPending.current = false;
     };
 
+    const handleEditPost = async () => {
+
+    };
+
+    const handleDeletePost = async () => {
+
+    };
+
     // TODO: handleComment
     const handleComment = () => {
 
     };
 
     return (
-        <section id={`post-${props.id}`} className="w-full sm:w-3/4 md:w-1/2 lg:w-2/5 flex flex-col gap-2 p-4 rounded-sm bg-surface">
-
+        <section
+            id={`post-${props.id}`}
+            className="w-full sm:w-3/4 md:w-1/2 lg:w-2/5 relative flex flex-col gap-2 p-4 rounded-sm bg-surface"
+            tabIndex={0}>
             <div className="flex flex-row justify-between">
                 <div className="flex flex-row items-center gap-2">
                     <Image
@@ -143,10 +164,43 @@ const Post = (props: Props) => {
                 </div>
 
                 <p className="text-xs text-text-secondary">{dateToReadable(props.createdAt)}</p>
-                
-                {/* { props.authorId ===
-                    <EllipsisVertical/>
-                } */}
+
+                {
+                    props.authorId === props.userId &&
+                        <>
+                            <EllipsisVertical
+                                className="icon right-2 cursor-pointer hover:text-accent"
+                                tabIndex={0}
+                                onClick={() => setIsOptions(!isOptions)}
+                                onKeyDown={(e) => e.key === 'Enter' && setIsOptions(!isOptions)}
+                            />
+
+                            { isOptions &&
+                                <>
+                                    <Options
+                                        options={[
+                                            {label: 'Edit Post', action: () => {setIsEdit(true)}},
+                                            {label: 'Delete Post', action: () => {setIsDelete(true)}}
+                                        ]}
+                                        onClose={() => setIsOptions(false)}
+                                        disableClose={isDelete || isEdit}
+                                    />
+
+                                    {isDelete &&
+                                        <DeletePost
+                                            postId={String(props.id)}
+                                            authorId={props.authorId}
+                                            onDelete={() => {
+                                                setIsDelete(false);
+                                                props.onDelete();
+                                            }}
+                                            onClose={() => {setIsDelete(false)}}
+                                        />
+                                    }
+                                </>
+                            }
+                        </>
+                }
             </div>
 
             <p className="text-text-secondary">{props.content}</p>
@@ -159,7 +213,9 @@ const Post = (props: Props) => {
                             : 'fill-surface text-text-secondary hover:fill-error hover:text-error icon'
                         }
                         size={24}
+                        tabIndex={0}
                         onClick={handleLike}
+                        onKeyDown={(e) => e.key === 'Enter' && handleLike()}
                     />
                     <span>{props.likes}</span>
                 </div>
@@ -170,7 +226,9 @@ const Post = (props: Props) => {
                             : 'text-text-secondary hover:text-success icon'
                         }
                         size={24}
+                        tabIndex={0}
                         onClick={handleRepost}
+                        onKeyDown={(e) => e.key === 'Enter' && handleRepost()}
                     />
                     <span>{props.reposts}</span>
                 </div>
@@ -180,7 +238,9 @@ const Post = (props: Props) => {
                             // shared ? 'fill-accent text-accent icon'
                             // : "fill-text-secondary text-text-secondary hover:fill-accent hover:text-accent"}
                         size={24}
+                        tabIndex={0}
                         onClick={handleShare}
+                        onKeyDown={(e) => e.key === 'Enter' && handleShare()}
                     />
                     {/* <span>{props.shares}</span> */}
                 </div>

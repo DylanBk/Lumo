@@ -1,7 +1,9 @@
 'use client';
 
+import { useSession } from "@/context/SessionContext";
 import { getFeed } from "@/app/actions/post";
 import { PostType } from "@/lib/definitions";
+
 import Post from "@/components/post/Post";
 import CreatePost from "@/components/post/modals/AddPost";
 
@@ -9,24 +11,18 @@ import { useEffect, useState } from "react";
 
 
 const Home = () => {
+  const session = useSession();
   const [posts, setPosts] = useState<PostType[] | undefined>([]);
 
   useEffect(() => {
-    const getPosts = async () => {
-      const res = await getFeed();
-
-      console.log('res', res)
-
-      // if (res.data) {
-      //   for (const p of res.data) {
-      //   };
-      // };
-      
-      setPosts(res.data);
-    };
-
     getPosts();
   }, []);
+
+  const getPosts = async () => {
+    const res = await getFeed();
+
+    setPosts(res.data);
+  };
 
   return (
     <main>
@@ -34,6 +30,7 @@ const Home = () => {
         { posts?.map((p) => (
           <Post
             key={p.id}
+            userId={session?.id}
             id={p.id}
             authorId={String(p.author_id)}
             authorName={p.author_name}
@@ -60,26 +57,26 @@ const Home = () => {
               console.log(like, repost)
               if (like) {
                 console.log('like', like)
-                setPosts((prevPosts) => 
-                  prevPosts?.map((post) => 
-                    post.id === p.id 
+                setPosts((prevPosts) =>
+                  prevPosts?.map((post) =>
+                    post.id === p.id
                       ? {
                         ...post,
                         likes: like === '+' ? post.likes + 1 : post.likes - 1,
-                        liked: like === '+' 
-                      } 
+                        liked: like === '+'
+                      }
                       : post
                   )
                 );
               } else if (repost) {
-                setPosts((prevPosts) => 
-                  prevPosts?.map((post) => 
-                    post.id === p.id 
+                setPosts((prevPosts) =>
+                  prevPosts?.map((post) =>
+                    post.id === p.id
                       ? {
                         ...post,
                         reposts: repost === '+' ? post.reposts + 1 : post.reposts - 1,
-                        repost: repost === '+' 
-                      } 
+                        repost: repost === '+'
+                      }
                       : post
                   )
                 );
@@ -87,11 +84,18 @@ const Home = () => {
 
               }
             }}
+            onDelete={() => {
+              setPosts((prevPosts) =>
+                prevPosts?.filter((post) => post.id !== p.id)
+              );
+            }}
           />
         ))}
       </div>
 
-      <CreatePost />
+      <CreatePost
+        onCreate={() => getPosts()}
+      />
     </main>
   );
 };

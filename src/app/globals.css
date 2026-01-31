@@ -147,7 +147,7 @@
     &:hover {
       color: var(--brand)
     }
-    
+
     &:has(svg.icon) {
       &:hover {
         color: var(--brand);
@@ -219,6 +219,17 @@
       &:focus,
       &:active {
         background: #dc2626;
+      }
+    }
+
+    &.neutral {
+      background: var(--color-gray-400);
+      color: var(--color-gray-950);
+
+      &:hover,
+      &:focus,
+      &:active {
+        background: var(--color-gray-500);
       }
     }
   }
@@ -333,6 +344,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: auto;
     z-index: 50;
 
     .modal-content {
@@ -344,6 +356,7 @@
       border-radius: 6px;
       background: var(--surface);
       box-shadow: var(--shadow-medium);
+      pointer-events: auto; /* Allow interactions with modal content */
       /* overflow-y: auto; */
 
       .modal-close {

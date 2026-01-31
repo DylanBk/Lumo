@@ -3,7 +3,7 @@
 import { getSession } from "@/lib/session";
 import { CreatePostState, CreatePostSchema, PostType, UpdatePostState, UpdatePostSchema } from "@/lib/definitions";
 import { ZodError } from "zod";
-import { createPost, getPosts, updatePost } from "@/lib/post";
+import { createPost, deletePost, getPosts, updatePost } from "@/lib/post";
 
 
 export const create = async (state: CreatePostState, formData: FormData) => {
@@ -66,7 +66,7 @@ export const getFeed = async () => {
             ok: false,
             message: e instanceof Error ? e.message : "Unknown error"
         };
-    }
+    };
 };
 
 export const update = async (state: UpdatePostState, formData: FormData): Promise<UpdatePostState> => {
@@ -77,6 +77,8 @@ export const update = async (state: UpdatePostState, formData: FormData): Promis
 
         const data = Object.fromEntries(formData);
         const parsedData = UpdatePostSchema.parse(data);
+
+        if (s.payload.id !== parsedData.id) throw new Error('You are not authorised to update this post');
 
         await updatePost({
             userId: String(s.payload.id),
@@ -95,7 +97,7 @@ export const update = async (state: UpdatePostState, formData: FormData): Promis
     };
 };
 
-export const like = async(id: string, state: boolean) => {
+export const like = async (id: string, state: boolean) => {
     try {
         const s = await getSession();
 
@@ -159,8 +161,8 @@ export const repost = async(id: string, state: boolean) => {
 //         console.log('updatePost - share')
 
 //         return {
-//             ok: true,
-//             message: `Post ${state ? 'shared' : 'unshared'}`,
+    //             ok: true,
+    //             message: `Post ${state ? 'shared' : 'unshared'}`,
 //             errors: {}
 //         };
 //     } catch (e) {
@@ -170,3 +172,24 @@ export const repost = async(id: string, state: boolean) => {
 //         };
 //     };
 // };
+
+export const remove = async (id: string, authorId: string) => {
+    try {
+        const s = await getSession();
+
+        if (!s?.payload.id) throw new Error('No session available');
+        if (s.payload.id !== authorId) throw new Error('You are not authorised to delete this post');
+
+        await deletePost(id);
+
+        return {
+            ok: true,
+            message: 'Post deleted successfully.'
+        };
+    } catch (e) {
+        return {
+            ok: false,
+            message: e instanceof Error ? e.message : "Unknown error"
+        };
+    };
+};

@@ -30,7 +30,7 @@ export async function getPost(id?: string, authorName?: string, content?: string
 export async function getPosts(id: string | null, limit = 20) {
     try {
         const q = await db.query(`
-            SELECT 
+            SELECT
                 p.id,
                 p.content,
                 p.author_id,
@@ -174,6 +174,26 @@ export async function updatePost({
         };
     } catch (e) {
         await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    };
+};
+
+export async function deletePost(id: string) {
+    const client = await db.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        const q = await client.query(
+            'DELETE FROM posts WHERE id = $1 RETURNING *',
+            [id]
+        );
+
+        await client.query('COMMIT');
+        return q.rows[0];
+    } catch (e) {
         throw e;
     } finally {
         client.release();

@@ -156,7 +156,7 @@ export type AuthFormState =
     }
     | undefined;
 
-export type UpdateUserState = 
+export type UpdateUserState =
     | {
         ok: boolean;
         errors?: {
@@ -220,6 +220,7 @@ export type UpdatePostState =
     | {
         ok: boolean;
         errors?: {
+            authorId?: string | null;
             content?: string | null;
         };
         message?: string;

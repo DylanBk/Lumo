@@ -1,13 +1,17 @@
 'use client';
 
-import { create } from "@/app/actions/post"; 
+import { create } from "@/app/actions/post";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { FocusTrap } from "focus-trap-react";
 
 import { Plus, X, LoaderCircle } from "lucide-react";
 import { CreatePostState } from "@/lib/definitions";
 
+
+type Props = {
+    onCreate: () => void;
+};
 
 const initialState = {
     ok: false,
@@ -17,15 +21,18 @@ const initialState = {
     }
 };
 
-const CreatePost = () => {
+const CreatePost = (props: Props) => {
     const [isModal, setIsModal] = useState<boolean>(false);
     const [state, action, isPending] = useActionState<CreatePostState, FormData>(create, initialState)
 
-    const handleClose = () => {
-        state!.ok = false;
-        state!.message = '';
-        state!.errors = {};
+    useEffect(() => {
+        if (state?.ok) {
+            setIsModal(false);
+            props.onCreate();
+        };
+    }, [state?.ok]);
 
+    const handleClose = () => {
         setIsModal(false);
     };
 
