@@ -40,6 +40,7 @@ const Home = () => {
             reposts={p.reposts}
             comments={p.comments}
             shares={p.shares}
+            edited={p.edited}
             createdAt={p.created_at}
             liked={p.liked}
             reposted={p.reposted}
@@ -82,6 +83,9 @@ const Home = () => {
                 );
               } else if (share) {
 
+              } else {
+                // for edit, re-fetch
+                getPosts();
               }
             }}
             onDelete={() => {

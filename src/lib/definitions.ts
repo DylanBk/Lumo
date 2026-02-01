@@ -95,13 +95,9 @@ export const CreatePostSchema = z.object({
 });
 
 export const UpdatePostSchema = z.object({
-    attr: z
-        .string()
-        .refine((val) => ['content', 'like', 'repost', 'comment'].includes(val), {
-        message: "Invalid attribute to update.",
-    }),
-
     id: z
+        .string(),
+    authorId: z
         .string(),
     content: z
         .string()
@@ -200,6 +196,7 @@ export type PostType = {
     reposts: number;
     shares: number;
     comments: number;
+    edited: boolean;
     created_at: Date;
     liked?: boolean;
     reposted?: boolean;

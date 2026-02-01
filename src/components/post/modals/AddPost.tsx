@@ -13,15 +13,16 @@ type Props = {
     onCreate: () => void;
 };
 
-const initialState = {
-    ok: false,
-    message: "",
-    errors: {
-        content: ''
-    }
-};
 
 const CreatePost = (props: Props) => {
+    const initialState = {
+        ok: false,
+        message: "",
+        errors: {
+            content: ''
+        }
+    };
+
     const [isModal, setIsModal] = useState<boolean>(false);
     const [state, action, isPending] = useActionState<CreatePostState, FormData>(create, initialState)
 

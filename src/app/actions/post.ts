@@ -36,15 +36,13 @@ export const create = async (state: CreatePostState, formData: FormData) => {
             return {
                 ok: false,
                 message: "",
-                errors,
-                data: Object.fromEntries(formData)
+                errors
             };
         };
         return {
             ok: false,
             message: e instanceof Error ? e.message : "Unknown error",
-            errors: {},
-            data: Object.fromEntries(formData)
+            errors: {}
         };
     };
 };
@@ -71,18 +69,17 @@ export const getFeed = async () => {
 
 export const update = async (state: UpdatePostState, formData: FormData): Promise<UpdatePostState> => {
     try {
-        const s = await getSession();
-
-        if (!s?.payload.id) throw new Error('No session available');
-
         const data = Object.fromEntries(formData);
         const parsedData = UpdatePostSchema.parse(data);
 
-        if (s.payload.id !== parsedData.id) throw new Error('You are not authorised to update this post');
+        const s = await getSession();
+
+        if (!s?.payload.id) throw new Error('No session available');
+        if (s.payload.id !== parsedData.authorId) throw new Error('You are not authorised to update this post');
 
         await updatePost({
             userId: String(s.payload.id),
-            postId: parsedData.id,
+            postId: String(parsedData.id),
             content: parsedData.content
         });
 
@@ -93,7 +90,27 @@ export const update = async (state: UpdatePostState, formData: FormData): Promis
         };
 
     } catch (e) {
-        if (e instanceof ZodError) {}
+        if (e instanceof ZodError) {
+            const errors: Record<string, string[]> = {};
+            for (const err of e.issues) {
+                const field = err.path[0];
+                if (typeof field === 'string') {
+                    if (!errors[field]) errors[field] = [];
+                    errors[field].push(err.message);
+                };
+            };
+
+            return {
+                ok: false,
+                message: "",
+                errors
+            };
+        };
+        return {
+            ok: false,
+            message: e instanceof Error ? e.message : "Unknown error",
+            errors: {}
+        };
     };
 };
 

@@ -32,7 +32,7 @@ const DeletePost = (props: Props) => {
         };
     };
 
-    const handleCancel = async () => {
+    const handleCancel = () => {
         props.onClose();
     };
 
@@ -48,6 +48,13 @@ const DeletePost = (props: Props) => {
 
                     <div className="flex flex-row justify-center gap-8">
                         <button
+                            className="neutral"
+                            onClick={handleCancel}
+                            onKeyDown={(e) => e.key === 'Enter' && handleCancel()}>
+                            Cancel
+                        </button>
+
+                        <button
                             className="danger"
                             onClick={handleDelete}
                             onKeyDown={(e) => e.key === 'Enter' && handleDelete()}
@@ -56,13 +63,6 @@ const DeletePost = (props: Props) => {
                                     <LoaderCircle className="icon animate-spin duration-200" />
                                 : 'Delete'
                             }
-                        </button>
-
-                        <button
-                            className="neutral"
-                            onClick={handleCancel}
-                            onKeyDown={(e) => e.key === 'Enter' && handleCancel()}>
-                            Cancel
                         </button>
                     </div>
                 </div>

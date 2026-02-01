@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 
-import { UpdatePostState } from "@/lib/definitions";
 import { dateToReadable } from "@/lib/helpers";
 import { useToast } from "@/context/ToastContext";
 
-import { like, repost, update } from "@/app/actions/post";
+import { like, repost } from "@/app/actions/post";
 
-import { useActionState, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Heart, Repeat, Share2, EllipsisVertical } from "lucide-react";
 
 import Options from "@/components/Options";
@@ -27,6 +26,7 @@ type Props = {
     reposts: number;
     shares: number;
     comments: number;
+    edited: boolean;
     createdAt: Date;
     liked?: boolean;
     reposted?: boolean;
@@ -43,17 +43,8 @@ type Props = {
     onDelete: () => void;
 };
 
-const initialState: UpdatePostState = {
-    ok: false,
-    message: "",
-    errors: {
-        content: null
-    }
-};
-
 
 const Post = (props: Props) => {
-    const [state, action, isPending] = useActionState<UpdatePostState, FormData>(update, initialState);
     const interactionPending = useRef<boolean>(false);
     const [liked, setLiked] = useState<boolean>(props.liked? true : false);
     const [reposted, setReposted] = useState<boolean>(props.reposted? true : false);
@@ -122,7 +113,7 @@ const Post = (props: Props) => {
 
         // if (x.ok) {
         //     setShared(!shared);
-        //     props.onUpdate({
+        //     props.onEdit({
         //         share: !shared
         //     });
         // };
@@ -130,19 +121,6 @@ const Post = (props: Props) => {
         showToast('Link Copied', 'You can now share this post.', 'info');
 
         // interactionPending.current = false;
-    };
-
-    const handleEditPost = async () => {
-
-    };
-
-    const handleDeletePost = async () => {
-
-    };
-
-    // TODO: handleComment
-    const handleComment = () => {
-
     };
 
     return (
@@ -186,7 +164,20 @@ const Post = (props: Props) => {
                                         disableClose={isDelete || isEdit}
                                     />
 
-                                    {isDelete &&
+                                    { isEdit &&
+                                        <EditPost
+                                            postId={String(props.id)}
+                                            postContent={props.content}
+                                            authorId={props.authorId}
+                                            onEdit={() => {
+                                                setIsEdit(false);
+                                                props.onUpdate({});
+                                            }}
+                                            onClose={() => {setIsEdit(false)}}
+                                            />
+                                    }
+
+                                    { isDelete &&
                                         <DeletePost
                                             postId={String(props.id)}
                                             authorId={props.authorId}
@@ -205,44 +196,50 @@ const Post = (props: Props) => {
 
             <p className="text-text-secondary">{props.content}</p>
 
-            <div className="flex flex-row justify-center gap-6 mt-2">
-                <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
-                    <Heart
-                        className={
-                            liked ? 'fill-error text-error icon'
-                            : 'fill-surface text-text-secondary hover:fill-error hover:text-error icon'
-                        }
-                        size={24}
-                        tabIndex={0}
-                        onClick={handleLike}
-                        onKeyDown={(e) => e.key === 'Enter' && handleLike()}
-                    />
-                    <span>{props.likes}</span>
-                </div>
-                <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
-                    <Repeat
-                        className={
-                            reposted ? 'text-success icon'
-                            : 'text-text-secondary hover:text-success icon'
-                        }
-                        size={24}
-                        tabIndex={0}
-                        onClick={handleRepost}
-                        onKeyDown={(e) => e.key === 'Enter' && handleRepost()}
-                    />
-                    <span>{props.reposts}</span>
-                </div>
-                <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
-                    <Share2
-                        className='fill-text-secondary text-text-secondary icon hover:fill-accent hover:text-accent'
-                            // shared ? 'fill-accent text-accent icon'
-                            // : "fill-text-secondary text-text-secondary hover:fill-accent hover:text-accent"}
-                        size={24}
-                        tabIndex={0}
-                        onClick={handleShare}
-                        onKeyDown={(e) => e.key === 'Enter' && handleShare()}
-                    />
-                    {/* <span>{props.shares}</span> */}
+            <div className="flex flex-row justify-center">
+                {props.edited &&
+                    <p className="absolute left-4 text-xs text-text-secondary italic">Edited</p>
+                }
+
+                <div className="flex flex-row justify-center gap-6 mt-2">
+                    <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
+                        <Heart
+                            className={
+                                liked ? 'fill-error text-error icon'
+                                : 'fill-surface text-text-secondary hover:fill-error hover:text-error icon'
+                            }
+                            size={24}
+                            tabIndex={0}
+                            onClick={handleLike}
+                            onKeyDown={(e) => e.key === 'Enter' && handleLike()}
+                        />
+                        <span>{props.likes}</span>
+                    </div>
+                    <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
+                        <Repeat
+                            className={
+                                reposted ? 'text-success icon'
+                                : 'text-text-secondary hover:text-success icon'
+                            }
+                            size={24}
+                            tabIndex={0}
+                            onClick={handleRepost}
+                            onKeyDown={(e) => e.key === 'Enter' && handleRepost()}
+                        />
+                        <span>{props.reposts}</span>
+                    </div>
+                    <div className="flex flex-row items-center gap-1 cursor-pointer hover:text-primary">
+                        <Share2
+                            className='fill-text-secondary text-text-secondary icon hover:fill-accent hover:text-accent'
+                                // shared ? 'fill-accent text-accent icon'
+                                // : "fill-text-secondary text-text-secondary hover:fill-accent hover:text-accent"}
+                            size={24}
+                            tabIndex={0}
+                            onClick={handleShare}
+                            onKeyDown={(e) => e.key === 'Enter' && handleShare()}
+                        />
+                        {/* <span>{props.shares}</span> */}
+                    </div>
                 </div>
             </div>
         </section>

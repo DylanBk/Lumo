@@ -39,6 +39,7 @@ export async function getPosts(id: string | null, limit = 20) {
                 p.reposts,
                 /*p.shares,*/
                 p.comments,
+                p.edited,
                 p.created_at,
                 EXISTS (SELECT 1 FROM likes WHERE post = p.id AND "user" = $1) AS liked,
                 EXISTS (SELECT 1 FROM reposts WHERE post = p.id AND "user" = $1) AS reposted,
@@ -82,7 +83,7 @@ export async function updatePost({
 
         if (content) {
             const q = await client.query(
-                'UPDATE posts SET content = $1 WHERE id = $2 RETURNING *',
+                'UPDATE posts SET content = $1, edited = TRUE WHERE id = $2 RETURNING *',
                 [content, numPostId]
             );
 
